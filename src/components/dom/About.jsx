@@ -1,39 +1,81 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { CheckCircle2 } from 'lucide-react';
+import { fadeLeft, fadeUp, staggerContainer } from '../../utils/animations';
 
 export default function About() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+
+  // Smooth parallax for the main content card
+  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
+
+  const points = [
+    "Performance-first architecture",
+    "Tailored digital strategies",
+    "Seamless 3D & UI integration",
+    "Scalable cloud infrastructure"
+  ];
+
   return (
-    <section className="relative w-full min-h-[100vh] flex items-center py-24">
+    <section ref={containerRef} className="relative w-full py-32 pointer-events-none overflow-hidden">
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-          <div className="pointer-events-none">
-            {/* The 3D object will appear here based on viewport or scroll */}
-          </div>
-          
-          <div className="glass p-10 md:p-14 border border-white/10 rounded-3xl pointer-events-auto">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white leading-tight">
-              Shaping the <br/><span className="text-gradient">Digital Frontier</span>
-            </h2>
-            <p className="text-white/70 text-lg mb-6 leading-relaxed">
-              We merge cutting-edge WebGL technology with refined design principles to create interfaces that don't just display information—they tell a living, breathing story.
-            </p>
-            <p className="text-white/70 text-lg mb-8 leading-relaxed">
-              Our approach leverages smooth scrolling and physical animations to build spatial awareness within the browser. Everything is interconnected.
-            </p>
-            
-            <div className="flex gap-4">
-              <div className="flex flex-col">
-                <span className="text-4xl font-black text-white mb-2">3D</span>
-                <span className="text-sm text-white/50 uppercase tracking-wider">Spatial Design</span>
-              </div>
-              <div className="w-[1px] bg-white/20 mx-4"></div>
-              <div className="flex flex-col">
-                <span className="text-4xl font-black text-white mb-2">60</span>
-                <span className="text-sm text-white/50 uppercase tracking-wider">FPS Motion</span>
-              </div>
+        <motion.div 
+          style={{ y }}
+          className="bg-[#111318]/40 backdrop-blur-xl border border-white/10 p-12 md:p-20 rounded-[3rem] relative z-10 pointer-events-auto shadow-[0_50px_100px_rgba(0,0,0,0.3)]"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <motion.h2 
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ margin: "-50px" }}
+                className="text-4xl md:text-6xl font-black text-white mb-8 leading-tight"
+              >
+                Why work with <br/>
+                <span className="text-blue-500">Jancode?</span>
+              </motion.h2>
+              <motion.p 
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ margin: "-50px" }}
+                className="text-white/60 text-lg md:text-xl mb-10 leading-relaxed"
+              >
+                We bridge the gap between imagination and technical reality. Our team specializes in high-end web experiences that don't just look good but perform under pressure.
+              </motion.p>
+              
+              <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full mb-10"></div>
             </div>
+
+            <motion.div 
+              variants={staggerContainer(0.2, 0.1)}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ margin: "-50px" }}
+              className="flex flex-col gap-6"
+            >
+              {points.map((point, i) => (
+                <motion.div 
+                  key={i} 
+                  variants={fadeLeft}
+                  className="flex items-center gap-4 bg-white/5 p-5 rounded-2xl border border-white/5 hover:border-blue-500/20 transition-colors group"
+                >
+                  <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0 group-hover:scale-110 transition-transform" />
+                  <span className="text-white/80 font-medium text-lg">{point}</span>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
+      
+      {/* Decorative background glass shape */}
+      <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] -z-0"></div>
     </section>
   );
 }
