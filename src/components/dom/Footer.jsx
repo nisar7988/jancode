@@ -1,120 +1,175 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useRef, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function Footer() {
+  const containerRef = useRef(null);
+  const mousePos = useRef({ x: 0, y: 0 });
+  const targetPos = useRef({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleMouseMove = (e) => {
+      const rect = container.getBoundingClientRect();
+      targetPos.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+    };
+
+    const handleMouseEnter = () => setIsHovering(true);
+    const handleMouseLeave = () => setIsHovering(false);
+
+    container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("mouseenter", handleMouseEnter);
+    container.addEventListener("mouseleave", handleMouseLeave);
+
+    let frameId;
+    const update = () => {
+      mousePos.current.x += (targetPos.current.x - mousePos.current.x) * 0.15;
+      mousePos.current.y += (targetPos.current.y - mousePos.current.y) * 0.15;
+
+      container.style.setProperty("--mouse-x", `${mousePos.current.x}px`);
+      container.style.setProperty("--mouse-y", `${mousePos.current.y}px`);
+
+      frameId = requestAnimationFrame(update);
+    };
+
+    update();
+
+    return () => {
+      container.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("mouseenter", handleMouseEnter);
+      container.removeEventListener("mouseleave", handleMouseLeave);
+      cancelAnimationFrame(frameId);
+    };
+  }, []);
+
   const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      y: 0,
-      transition: {
-        staggerChildren: 0.1,
-        duration: 0.8,
-        ease: "easeOut"
-      }
-    }
+      transition: { staggerChildren: 0.1, duration: 0.8 },
+    },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 }
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
   };
 
   return (
-    <footer className="w-full bg-[#0A0C0F] relative z-20 pointer-events-auto border-t border-white/10 pt-20 pb-10 overflow-hidden">
-      {/* Subtle top glowing line */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
-      
-      <div className="container mx-auto px-6">
-        <motion.div 
+    <footer
+      ref={containerRef}
+      className="w-full bg-[#0A0C0F]/95 relative pt-24 pb-10 overflow-hidden"
+    >
+      {/* ================= BIG TEXT (SEPARATE SECTION) ================= */}
+      <div className="w-full mb-20 select-none pointer-events-none relative">
+        <h2
+          className={`text-[18vw] font-black leading-none text-center uppercase transition-opacity duration-1000 ${
+            isHovering ? "opacity-100" : "opacity-30"
+          }`}
+          style={{
+            fontFamily: "'Outfit', sans-serif",
+            WebkitTextStroke: "1px rgba(255,255,255,0.08)",
+            color: "transparent",
+            backgroundImage: `radial-gradient(circle 150px at var(--mouse-x) var(--mouse-y),
+              #3b82f6 0%,
+              #0114a3ff 30%,
+              transparent 100%)`,
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+          }}
+        >
+          JANCODE
+        </h2>
+      </div>
+
+      {/* ================= FOOTER CONTENT ================= */}
+      <div className="container mx-auto px-6 relative z-10">
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ margin: "-50px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-20"
         >
-          
-          {/* Brand Section */}
-          <motion.div variants={itemVariants} className="lg:col-span-4 flex flex-col">
+          {/* Brand */}
+          <motion.div variants={itemVariants} className="lg:col-span-4">
             <div className="flex items-center gap-3 mb-6">
-              <motion.div 
-                whileHover={{ rotate: 180 }}
-                transition={{ duration: 0.5 }}
-                className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-emerald-400 shrink-0"
-              ></motion.div>
-              <span className="text-2xl font-black text-white tracking-widest uppercase">Jancode</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 shadow-[0_0_20px_rgba(59,130,246,0.5)]" />
+              <span className="text-2xl font-black text-white uppercase tracking-widest">
+                Jancode
+              </span>
             </div>
-            <p className="text-white/60 text-sm leading-relaxed max-w-sm">
-              We engineer scalable digital products bridging the gap between world-class aesthetics and rigorous software architecture.
+            <p className="text-white/50 text-sm max-w-sm">
+              Architecting high-performance digital solutions with a focus on
+              aesthetic precision and technical excellence.
             </p>
           </motion.div>
-          
-          {/* Services Links */}
-          <motion.div variants={itemVariants} className="lg:col-span-2 lg:col-start-7 flex flex-col">
-            <h4 className="text-white font-bold mb-6 tracking-wide">Services</h4>
+
+          {/* Services */}
+          <motion.div
+            variants={itemVariants}
+            className="lg:col-span-2 lg:col-start-7"
+          >
+            <h4 className="text-white/40 text-sm uppercase mb-6">Services</h4>
             <div className="flex flex-col gap-4">
-              {["Web Development", "eCommerce", "CMS & Admin", "Mobile Apps"].map((link, i) => (
-                <motion.a 
+              {["Custom Software", "Cloud", "Design", "AI"].map((item, i) => (
+                <a
                   key={i}
-                  href="#" 
-                  whileHover={{ x: 5, color: "#60a5fa" }}
-                  className="text-white/50 text-sm transition-colors"
+                  href="#"
+                  className="text-white/40 hover:text-white text-sm transition"
                 >
-                  {link}
-                </motion.a>
+                  {item}
+                </a>
               ))}
             </div>
           </motion.div>
-          
-          {/* Company Links */}
-          <motion.div variants={itemVariants} className="lg:col-span-2 flex flex-col">
-            <h4 className="text-white font-bold mb-6 tracking-wide">Company</h4>
+
+          {/* Company */}
+          <motion.div variants={itemVariants} className="lg:col-span-2">
+            <h4 className="text-white/40 text-sm uppercase mb-6">Company</h4>
             <div className="flex flex-col gap-4">
-              {["About Us", "Our Work", "Process", "Contact"].map((link, i) => (
-                <motion.a 
+              {["Projects", "Mission", "Careers", "Contact"].map((item, i) => (
+                <a
                   key={i}
-                  href="#" 
-                  whileHover={{ x: 5, color: "#ffffff" }}
-                  className="text-white/50 text-sm transition-colors"
+                  href="#"
+                  className="text-white/40 hover:text-white text-sm transition"
                 >
-                  {link}
-                </motion.a>
+                  {item}
+                </a>
               ))}
             </div>
           </motion.div>
-          
-          {/* Call to action Mini */}
-          <motion.div variants={itemVariants} className="lg:col-span-2 flex flex-col items-start lg:items-end">
-            <h4 className="text-white font-bold mb-6 tracking-wide lg:text-right">Ready to start?</h4>
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-gray-200 transition-all duration-300 shadow-lg shadow-white/5"
+
+          {/* Contact */}
+          <motion.div variants={itemVariants} className="lg:col-span-2">
+            <h4 className="text-white/40 text-sm uppercase mb-6">Contact</h4>
+            <a
+              href="mailto:hello@jancode.dev"
+              className="text-white text-lg border-b border-white/20 hover:border-white"
             >
-              Start a Project
-            </motion.button>
+              hello@jancode.dev
+            </a>
           </motion.div>
         </motion.div>
-        
-        {/* Bottom Bar */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 1 }}
-          className="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4"
-        >
-          <p className="text-white/40 text-xs">
-            &copy; {new Date().getFullYear()} Jancode Studio. All rights reserved.
-          </p>
+
+        {/* Bottom */}
+        <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-white/30 text-xs uppercase tracking-widest">
+          <span>© {new Date().getFullYear()} Jancode</span>
           <div className="flex gap-6">
-            <a href="#" className="text-white/40 hover:text-white text-xs transition-colors">Privacy Policy</a>
-            <a href="#" className="text-white/40 hover:text-white text-xs transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-white">
+              Privacy
+            </a>
+            <a href="#" className="hover:text-white">
+              Terms
+            </a>
           </div>
-        </motion.div>
+        </div>
       </div>
-      
-      {/* Background glow decorator */}
-      <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-full max-w-4xl h-48 bg-blue-500/5 blur-[120px] rounded-full pointer-events-none"></div>
     </footer>
   );
 }
